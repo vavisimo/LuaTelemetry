@@ -396,14 +396,14 @@ local function flightModes()
 	data.homeResetPrev = homeReset
 end
 
-local function gpsDegMin(coord, lat)
+local function gpsDegMin(coord, lat, digits)
 	local gpsD = math.floor(math.abs(coord))
-	return gpsD .. string.format("\64%05.2f", (math.abs(coord) - gpsD) * 60) .. (lat and (coord >= 0 and "N" or "S") or (coord >= 0 and "E" or "W"))
+	return gpsD .. string.format((digits == 4 and "\64%07.4f" or "\64%05.2f"), (math.abs(coord) - gpsD) * 60) .. (lat and (coord >= 0 and "N" or "S") or (coord >= 0 and "E" or "W"))
 end
 
-local function gpsGeocoding(coord, lat)
+local function gpsGeocoding(coord, lat, digits)
 	local gpsD = math.floor(math.abs(coord))
-	return (lat and (coord >= 0 and "N" or "S") or (coord >= 0 and "E" or "W")) .. gpsD .. string.format("\64%05.2f", (math.abs(coord) - gpsD) * 60)
+	return (lat and (coord >= 0 and "N" or "S") or (coord >= 0 and "E" or "W")) .. gpsD .. string.format((digits == 4 and "\64%07.4f" or "\64%05.2f"), (math.abs(coord) - gpsD) * 60)
 end
 
 local function background()
@@ -600,6 +600,24 @@ local function run(event)
 		lcd.drawText(X_CNTR + 10, 57, math.floor(data.heading + 0.5) .. "\64", SMLSIZE + RIGHT + data.telemFlags)
 
 		lcd.drawLine(ALT_RIGHT, 8, ALT_RIGHT, 63, SOLID, FORCE)
+
+		-- GPS
+		if data.gpsLatLon ~= false then
+			local gpsFlags = SMLSIZE + RIGHT + ((data.telemFlags > 0 or not data.gpsFix) and FLASH or 0)
+			tmp = ALT_RIGHT - 25
+			--lcd.drawText(tmp, 32, math.floor(data.gpsAlt + 0.5) .. units[data.gpsAlt_unit], gpsFlags)
+			if config[16].v == 0 then
+				lcd.drawText(tmp, 40, string.format("%9.5f", data.gpsLatLon.lat), gpsFlags)
+				lcd.drawText(tmp, 48, string.format("%9.5f", data.gpsLatLon.lon), gpsFlags)
+			else
+				lcd.drawText(tmp, 40, config[16].v == 1 and gpsDegMin(data.gpsLatLon.lat, true, 4) or gpsGeocoding(data.gpsLatLon.lat, true, 4), gpsFlags)
+				lcd.drawText(tmp, 48, config[16].v == 1 and gpsDegMin(data.gpsLatLon.lon, false, 4) or gpsGeocoding(data.gpsLatLon.lon, false, 4), gpsFlags)
+			end
+		else
+			lcd.drawFilledRectangle(ALT_RIGHT - 75, 33, 41, 23, INVERS)
+			lcd.drawText(ALT_RIGHT - 71, 36, "No GPS", INVERS)
+			lcd.drawText(ALT_RIGHT - 62, 46, "Fix", INVERS)
+		end
 	else
 
 		-- GPS
@@ -611,8 +629,8 @@ local function run(event)
 				lcd.drawText(tmp, 25, math.floor(data.gpsLatLon.lat * GPS_DIGITS) / GPS_DIGITS, gpsFlags)
 				lcd.drawText(tmp, 33, math.floor(data.gpsLatLon.lon * GPS_DIGITS) / GPS_DIGITS, gpsFlags)
 			else
-				lcd.drawText(tmp, 25, config[16].v == 1 and gpsDegMin(data.gpsLatLon.lat, true) or gpsGeocoding(data.gpsLatLon.lat, true), gpsFlags)
-				lcd.drawText(tmp, 33, config[16].v == 1 and gpsDegMin(data.gpsLatLon.lon, false) or gpsGeocoding(data.gpsLatLon.lon, false), gpsFlags)
+				lcd.drawText(tmp, 25, config[16].v == 1 and gpsDegMin(data.gpsLatLon.lat, true, 2) or gpsGeocoding(data.gpsLatLon.lat, true, 2), gpsFlags)
+				lcd.drawText(tmp, 33, config[16].v == 1 and gpsDegMin(data.gpsLatLon.lon, false, 2) or gpsGeocoding(data.gpsLatLon.lon, false, 2), gpsFlags)
 			end
 		else
 			lcd.drawFilledRectangle(RIGHT_POS - 41, 17, 41, 23, INVERS)
