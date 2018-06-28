@@ -442,7 +442,7 @@ local function background()
 		data.txBatt = getValue(data.txBatt_id)
 		data.rssiLast = data.rssi
 		local gpsTemp = getValue(data.gpsLatLon_id)
-		data.gpsFix = data.satellites > 3200 and type(gpsTemp) == "table" and gpsTemp.lat ~= nil and gpsTemp.lon ~= nil
+		data.gpsFix = data.satellites > 3000 and type(gpsTemp) == "table" and gpsTemp.lat ~= nil and gpsTemp.lon ~= nil
 		if data.gpsFix then
 			data.gpsLatLon = gpsTemp
 			if getTime() > data.gpsLogTimer then
@@ -538,10 +538,11 @@ local function run(event)
 	local startupTime = 0
 
 	-- GPS
+	lcd.drawText(RIGHT_POS - 11, 9, data.satellites % 100, SMLSIZE + RIGHT + data.telemFlags)
 	if data.gpsLatLon ~= false then
 		local gpsFlags = SMLSIZE + RIGHT + ((data.telemFlags > 0 or not data.gpsFix) and FLASH or 0)
+		lcd.drawText(RIGHT_POS - 11, 17, math.floor(data.gpsAlt + 0.5) .. units[data.gpsAlt_unit], gpsFlags)
 		tmp = RIGHT_POS - (gpsFlags == SMLSIZE + RIGHT and 0 or 1)
-		lcd.drawText(tmp, 17, math.floor(data.gpsAlt + 0.5) .. units[data.gpsAlt_unit], gpsFlags)
 		if config[16].v == 0 then
 			lcd.drawText(tmp, 25, math.floor(data.gpsLatLon.lat * GPS_DIGITS) / GPS_DIGITS, gpsFlags)
 			lcd.drawText(tmp, 33, math.floor(data.gpsLatLon.lon * GPS_DIGITS) / GPS_DIGITS, gpsFlags)
@@ -550,23 +551,23 @@ local function run(event)
 			lcd.drawText(tmp, 33, config[16].v == 1 and gpsDegMin(data.gpsLatLon.lon, false) or gpsGeocoding(data.gpsLatLon.lon, false), gpsFlags)
 		end
 	else
-		lcd.drawFilledRectangle(RIGHT_POS - 41, 17, 41, 23, INVERS)
-		lcd.drawText(RIGHT_POS - 37, 20, "No GPS", INVERS)
-		lcd.drawText(RIGHT_POS - 28, 30, "Fix", INVERS)
+		lcd.drawFilledRectangle(RIGHT_POS - 41, 25, 41, 15, INVERS)
+		lcd.drawText(RIGHT_POS - 33, 26, "No GPS", SMLSIZE + INVERS)
+		lcd.drawText(RIGHT_POS - 26, 33, "Fix", SMLSIZE + INVERS)
 	end
 	if ((data.armed or data.modeId == 6) and data.hdop < 8) or not data.telemetry then
-		lcd.drawText(RIGHT_POS - 28, 9, "   ", FLASH)
+		lcd.drawText(RIGHT_POS - 10, 9, "   ", FLASH)
 	end
-	for i = 22, 28, 2 do
-		lcd.drawLine(RIGHT_POS - i, (data.hdop >= 20 - i / 2 or not SMLCD) and i - 14 or 15, RIGHT_POS - i, 15, SOLID, (data.hdop >= 20 - i / 2 or SMLCD) and 0 or GREY_DEFAULT)
+	for i = 9, 6, -1 do
+		lcd.drawLine(RIGHT_POS - ((data.hdop >= i or not SMLCD) and i + 1 or 6), 27 - (i * 2), RIGHT_POS - ((data.hdop >= i or not SMLCD) and 11 - i or 6), 27 - (i * 2), SOLID, (data.hdop >= i or SMLCD) and 0 or GREY_DEFAULT)
 	end
-	lcd.drawLine(RIGHT_POS - 17, 9, RIGHT_POS - 13, 13, SOLID, FORCE)
-	lcd.drawLine(RIGHT_POS - 17, 10, RIGHT_POS - 14, 13, SOLID, FORCE)
-	lcd.drawLine(RIGHT_POS - 17, 11, RIGHT_POS - 15, 13, SOLID, FORCE)
-	lcd.drawLine(RIGHT_POS - 18, 14, RIGHT_POS - 14, 10, SOLID, FORCE)
-	lcd.drawPoint(RIGHT_POS - 17, 14)
-	lcd.drawPoint(RIGHT_POS - 16, 14)
-	lcd.drawText(RIGHT_POS - (data.telemFlags == 0 and 0 or 1), 9, data.satellites % 100, SMLSIZE + RIGHT + data.telemFlags)
+	lcd.drawLine(RIGHT_POS - 8, 18, RIGHT_POS - 4, 18, SOLID, FORCE)
+	lcd.drawLine(RIGHT_POS - 7, 19, RIGHT_POS - 5, 19, SOLID, FORCE)
+	lcd.drawPoint(RIGHT_POS - 6, 17)
+	lcd.drawPoint(RIGHT_POS - 6, 20)
+	lcd.drawFilledRectangle(RIGHT_POS - 7, 21, 3, 3, INVERS)
+	lcd.drawRectangle(RIGHT_POS - 10, 21, 2, 2, INVERS)
+	lcd.drawRectangle(RIGHT_POS - 3, 21, 2, 2, INVERS)
 
 	-- Directionals
 	if data.showHead and data.startup == 0 and data.config == 0 then
