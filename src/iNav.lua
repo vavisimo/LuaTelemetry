@@ -300,7 +300,7 @@ local function flightModes()
 			playAudio(modes[data.modeId].w)
 		end
 	end
-	data.hdop = data.satellites / 100 % 10
+	data.hdop = math.floor(data.satellites / 100) % 10
 	if data.armed then
 		data.distanceLast = data.distance
 		if config[13].v == 1 then
@@ -554,12 +554,13 @@ local function run(event)
 		lcd.drawText(RIGHT_POS - 37, 20, "No GPS", INVERS)
 		lcd.drawText(RIGHT_POS - 28, 30, "Fix", INVERS)
 	end
-	if ((data.armed or data.modeId == 6) and data.hdop < 8) or not data.telemetry then
-		lcd.drawText(RIGHT_POS - 28, 9, "   ", FLASH)
-	end
-	for i = 22, 28, 2 do
-		lcd.drawLine(RIGHT_POS - i, (data.hdop >= 20 - i / 2 or not SMLCD) and i - 14 or 15, RIGHT_POS - i, 15, SOLID, (data.hdop >= 20 - i / 2 or SMLCD) and 0 or GREY_DEFAULT)
-	end
+	--if ((data.armed or data.modeId == 6) and data.hdop < 8) or not data.telemetry then
+	--	lcd.drawText(RIGHT_POS - 28, 9, "   ", FLASH)
+	--end
+	--for i = 22, 28, 2 do
+	--	lcd.drawLine(RIGHT_POS - i, (data.hdop >= 20 - i / 2 or not SMLCD) and i - 14 or 15, RIGHT_POS - i, 15, SOLID, (data.hdop >= 20 - i / 2 or SMLCD) and 0 or GREY_DEFAULT)
+	--end
+	lcd.drawText(RIGHT_POS - 18, 9, data.hdop == 0 and 99 or (9 - data.hdop) / 2 + 1.8, SMLSIZE + RIGHT + ((((data.armed or data.modeId == 6) and data.hdop < 8) or not data.telemetry) and FLASH or 0))
 	lcd.drawLine(RIGHT_POS - 17, 9, RIGHT_POS - 13, 13, SOLID, FORCE)
 	lcd.drawLine(RIGHT_POS - 17, 10, RIGHT_POS - 14, 13, SOLID, FORCE)
 	lcd.drawLine(RIGHT_POS - 17, 11, RIGHT_POS - 15, 13, SOLID, FORCE)
