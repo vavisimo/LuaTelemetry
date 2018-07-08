@@ -1,4 +1,4 @@
-local FILE_PATH, LCD_W, PREV, INCR, NEXT, DECR, gpsDegMin, gpsGeocoding, configValues, configTop, configSelect, config, data, event = ...
+local FILE_PATH, LCD_W, PREV, INCR, NEXT, DECR, gpsDegMin, gpsGeocoding, configValues, config, data, event = ...
 
 local CONFIG_X = LCD_W < 212 and 6 or 48
 
@@ -31,10 +31,10 @@ config[7].p = data.accZ_id == -1 and 1 or nil
 config[17].p = not data.showCurr and 1 or nil
 config[18].p = config[17].p
 config[20].p = not data.pitot and 1 or nil
-for line = configTop, math.min(configValues, configTop + 5) do
-	local y = (line - configTop) * 8 + 10 + 3
+for line = LTconfigTop, math.min(configValues, LTconfigTop + 5) do
+	local y = (line - LTconfigTop) * 8 + 10 + 3
 	local z = config[line].z
-	tmp = (data.config == line and INVERS + configSelect or 0) + (config[z].d ~= nil and PREC1 or 0)
+	local tmp = (data.config == line and INVERS + LTconfigSelect or 0) + (config[z].d ~= nil and PREC1 or 0)
 	if not data.showCurr and z >= 17 and z <= 18 then
 		config[z].p = 1
 	end
@@ -66,30 +66,30 @@ for line = configTop, math.min(configValues, configTop + 5) do
 	end
 end
 
-if configSelect == 0 then
+if LTconfigSelect == 0 then
 	-- Select config option
 	if event == EVT_EXIT_BREAK then
 		saveConfig()
 		data.config = 0
 	elseif event == NEXT then -- Next option
 		data.config = data.config == configValues and 1 or data.config + 1
-		configTop = data.config > math.min(configValues, configTop + 5) and configTop + 1 or (data.config == 1 and 1 or configTop)
+		LTconfigTop = data.config > math.min(configValues, LTconfigTop + 5) and LTconfigTop + 1 or (data.config == 1 and 1 or LTconfigTop)
 		while config[config[data.config].z].p ~= nil do
 			data.config = math.min(data.config + 1, configValues)
-			configTop = data.config > math.min(configValues, configTop + 5) and configTop + 1 or configTop
+			LTconfigTop = data.config > math.min(configValues, LTconfigTop + 5) and LTconfigTop + 1 or LTconfigTop
 		end
 	elseif event == PREV then -- Previous option
 		data.config = data.config == 1 and configValues or data.config - 1
-		configTop = data.config < configTop and configTop - 1 or (data.config == configValues and configValues - 5 or configTop)
+		LTconfigTop = data.config < LTconfigTop and LTconfigTop - 1 or (data.config == configValues and configValues - 5 or LTconfigTop)
 		while config[config[data.config].z].p ~= nil do
 			data.config = math.max(data.config - 1, 1)
-			configTop = data.config < configTop and configTop - 1 or configTop
+			LTconfigTop = data.config < LTconfigTop and LTconfigTop - 1 or LTconfigTop
 		end
 	end
 else
 	local z = config[data.config].z
 	if event == EVT_EXIT_BREAK then
-		configSelect = 0
+		LTconfigSelect = 0
 	elseif event == INCR then
 		config[z].v = math.min(math.floor(config[z].v * 10 + config[z].i * 10) / 10, config[z].x == nil and 1 or config[z].x)
 	elseif event == DECR then
@@ -115,7 +115,7 @@ else
 end
 
 if event == EVT_ENTER_BREAK then
-	configSelect = (configSelect == 0) and BLINK or 0
+	LTconfigSelect = (LTconfigSelect == 0) and BLINK or 0
 end
 
-return configTop, configSelect, config, data
+return 0
